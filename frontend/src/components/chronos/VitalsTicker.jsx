@@ -73,7 +73,7 @@ export default function VitalsTicker({ vitals, history, status }) {
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
               <span
-                className={cfg.key === 'heart_rate' ? 'animate-heartbeat' : ''}
+                className={`${cfg.key === 'heart_rate' ? 'animate-heartbeat' : ''} counter-update`}
                 style={{
                   fontSize: '28px',
                   fontWeight: 800,

@@ -30,7 +30,7 @@ function simulateVitals(base, status) {
   return next
 }
 
-export default function ChronosView() {
+export default function ChronosView({ onRiskChange }) {
   const [selectedId, setSelectedId] = useState(patients[0].id)
   
   // Live patients with fluctuating risk scores
@@ -72,6 +72,13 @@ export default function ChronosView() {
   }, [])
 
   const selectedPatient = livePatients.find(p => p.id === selectedId) || livePatients[0]
+
+  // Notify parent of risk level changes for ambient particles
+  useEffect(() => {
+    if (onRiskChange && selectedPatient) {
+      onRiskChange(selectedPatient.aggregateRisk)
+    }
+  }, [selectedPatient?.aggregateRisk, onRiskChange])
   
   // Vitals simulation engine: tick every 1.5s reading the real timeline datastream
   const timeIndexRef = useRef(0)

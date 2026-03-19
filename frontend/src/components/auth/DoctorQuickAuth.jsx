@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Stethoscope, Mail, Lock, User, ArrowRight, AlertCircle, Loader2, CheckCircle2, Zap } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import ThemeToggle from '../shared/ThemeToggle'
 
 const PHASES = {
   INPUT: 'input',
@@ -34,10 +35,10 @@ function AuthParticles() {
             height: p.size,
             borderRadius: '50%',
             background: p.id % 3 === 0
-              ? 'rgba(52, 211, 153, 0.6)'
+              ? 'var(--particle-green)'
               : p.id % 3 === 1
-                ? 'rgba(100, 210, 255, 0.5)'
-                : 'rgba(191, 90, 242, 0.4)',
+                ? 'var(--particle-blue)'
+                : 'var(--particle-purple)',
           }}
           animate={{
             y: [0, -30, 0, 20, 0],
@@ -75,7 +76,7 @@ function DNAHelix() {
             width: '4px',
             height: '4px',
             borderRadius: '50%',
-            background: '#34d399',
+            background: 'var(--color-stable)',
             position: 'absolute',
           }}
           animate={{
@@ -105,7 +106,7 @@ function ScanLine({ active }) {
         left: 0,
         right: 0,
         height: '2px',
-        background: 'linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), transparent)',
+        background: `linear-gradient(90deg, transparent, var(--color-stable), transparent)`,
         zIndex: 10,
         pointerEvents: 'none',
       }}
@@ -178,8 +179,6 @@ export default function DoctorQuickAuth() {
         res = await login(email.trim(), password)
       } else {
         res = await signup(email.trim(), password, name.trim())
-        // Supabase returns a user but might require email confirmation.
-        // Assuming auto-confirm or test mode is enabled for hackathon.
         if (res.user && res.session === null) {
           throw new Error("Check your email for confirmation link.")
         }
@@ -204,6 +203,30 @@ export default function DoctorQuickAuth() {
     { label: 'Granting access privileges', threshold: 90 },
   ]
 
+  const inputStyle = {
+    width: '100%',
+    padding: '14px 16px 14px 44px',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--input-border)',
+    background: 'var(--input-bg)',
+    color: 'var(--text-primary)',
+    fontSize: '15px',
+    outline: 'none',
+    transition: 'all 300ms',
+    boxSizing: 'border-box',
+    fontFamily: 'var(--font-display)',
+  }
+
+  const handleInputFocus = (e) => {
+    e.target.style.borderColor = 'var(--input-focus-border)'
+    e.target.style.boxShadow = `0 0 0 3px var(--input-focus-ring)`
+  }
+
+  const handleInputBlur = (e) => {
+    e.target.style.borderColor = 'var(--input-border)'
+    e.target.style.boxShadow = 'none'
+  }
+
   return (
     <div style={{
       position: 'fixed',
@@ -211,19 +234,24 @@ export default function DoctorQuickAuth() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#040608',
+      background: 'var(--bg-abyss)',
       fontFamily: 'var(--font-display)',
       overflow: 'hidden',
       zIndex: 9999,
     }}>
+      {/* Theme toggle in top-right */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+        <ThemeToggle />
+      </div>
+
       {/* Ambient animated background */}
       <div style={{
         position: 'absolute',
         inset: 0,
         background: `
-          radial-gradient(ellipse at 25% 25%, rgba(52, 211, 153, 0.06) 0%, transparent 50%),
-          radial-gradient(ellipse at 75% 75%, rgba(100, 210, 255, 0.04) 0%, transparent 50%),
-          radial-gradient(ellipse at 50% 50%, rgba(191, 90, 242, 0.03) 0%, transparent 60%)
+          radial-gradient(ellipse at 25% 25%, var(--ambient-g1) 0%, transparent 50%),
+          radial-gradient(ellipse at 75% 75%, var(--ambient-g2) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, var(--ambient-g3) 0%, transparent 60%)
         `,
       }} />
 
@@ -232,8 +260,8 @@ export default function DoctorQuickAuth() {
         position: 'absolute',
         inset: 0,
         backgroundImage: `
-          linear-gradient(rgba(52, 211, 153, 0.015) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(52, 211, 153, 0.015) 1px, transparent 1px)
+          linear-gradient(var(--grid-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)
         `,
         backgroundSize: '80px 80px',
         pointerEvents: 'none',
@@ -247,19 +275,20 @@ export default function DoctorQuickAuth() {
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="glass-shimmer"
         style={{
           position: 'relative',
           width: '100%',
           maxWidth: '460px',
           padding: '40px',
           borderRadius: '24px',
-          background: 'rgba(10, 14, 23, 0.85)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
+          border: '1px solid var(--glass-border)',
           boxShadow: `
             0 0 0 1px rgba(52, 211, 153, 0.05),
-            0 25px 80px rgba(0, 0, 0, 0.6),
+            0 25px 80px rgba(0, 0, 0, 0.3),
             0 0 120px rgba(52, 211, 153, 0.03),
             inset 0 1px 0 rgba(255, 255, 255, 0.04)
           `,
@@ -276,7 +305,7 @@ export default function DoctorQuickAuth() {
           transform: 'translateX(-50%)',
           width: '200px',
           height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.5), transparent)',
+          background: `linear-gradient(90deg, transparent, var(--color-stable), transparent)`,
         }} />
 
         <AnimatePresence mode="wait">
@@ -296,7 +325,7 @@ export default function DoctorQuickAuth() {
                     width: '72px',
                     height: '72px',
                     borderRadius: '20px',
-                    background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(100, 210, 255, 0.1))',
+                    background: `linear-gradient(135deg, var(--color-stable-bg), rgba(100, 210, 255, 0.08))`,
                     border: '1px solid rgba(52, 211, 153, 0.2)',
                     display: 'flex',
                     alignItems: 'center',
@@ -312,25 +341,25 @@ export default function DoctorQuickAuth() {
                   }}
                   transition={{ duration: 3, repeat: Infinity }}
                 >
-                  <ShieldCheck size={32} color="#34d399" strokeWidth={1.5} />
+                  <ShieldCheck size={32} color="var(--color-stable)" strokeWidth={1.5} />
                 </motion.div>
 
                 <h1 style={{
                   fontSize: '24px',
                   fontWeight: 700,
                   letterSpacing: '-0.5px',
-                  color: '#eef1f6',
+                  color: 'var(--text-primary)',
                   marginBottom: '8px',
                 }}>
                   {isLogin ? 'Secure Gateway' : 'Doctor Registration'}
                 </h1>
                 <p style={{
                   fontSize: '13px',
-                  color: '#8891a4',
+                  color: 'var(--text-secondary)',
                   fontFamily: 'var(--font-mono)',
                   letterSpacing: '0.5px',
                 }}>
-                  SYNAPSE EIT // COMMAND CENTER
+                  SYNAPSE GTB // COMMAND CENTER
                 </p>
               </div>
 
@@ -349,7 +378,7 @@ export default function DoctorQuickAuth() {
                         display: 'block',
                         fontSize: '11px',
                         fontWeight: 600,
-                        color: '#8891a4',
+                        color: 'var(--text-secondary)',
                         textTransform: 'uppercase',
                         letterSpacing: '1.2px',
                         marginBottom: '8px',
@@ -363,28 +392,11 @@ export default function DoctorQuickAuth() {
                           value={name}
                           onChange={e => setName(e.target.value)}
                           placeholder="Dr. Jane Smith"
-                          style={{
-                            width: '100%',
-                            padding: '14px 16px 14px 44px',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            color: '#eef1f6',
-                            fontSize: '15px',
-                            outline: 'none',
-                            transition: 'all 300ms',
-                            boxSizing: 'border-box',
-                          }}
-                          onFocus={e => {
-                            e.target.style.borderColor = 'rgba(52, 211, 153, 0.4)'
-                            e.target.style.boxShadow = '0 0 0 3px rgba(52, 211, 153, 0.08)'
-                          }}
-                          onBlur={e => {
-                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                            e.target.style.boxShadow = 'none'
-                          }}
+                          style={inputStyle}
+                          onFocus={handleInputFocus}
+                          onBlur={handleInputBlur}
                         />
-                        <User size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#4a5568' }} />
+                        <User size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
                       </div>
                     </motion.div>
                   )}
@@ -396,7 +408,7 @@ export default function DoctorQuickAuth() {
                     display: 'block',
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: '#8891a4',
+                    color: 'var(--text-secondary)',
                     textTransform: 'uppercase',
                     letterSpacing: '1.2px',
                     marginBottom: '8px',
@@ -410,28 +422,11 @@ export default function DoctorQuickAuth() {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="dr.smith@hospital.org"
-                      style={{
-                        width: '100%',
-                        padding: '14px 16px 14px 44px',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        color: '#eef1f6',
-                        fontSize: '15px',
-                        outline: 'none',
-                        transition: 'all 300ms',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={e => {
-                        e.target.style.borderColor = 'rgba(52, 211, 153, 0.4)'
-                        e.target.style.boxShadow = '0 0 0 3px rgba(52, 211, 153, 0.08)'
-                      }}
-                      onBlur={e => {
-                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                        e.target.style.boxShadow = 'none'
-                      }}
+                      style={inputStyle}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
                     />
-                    <Mail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#4a5568' }} />
+                    <Mail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
                   </div>
                 </div>
 
@@ -441,7 +436,7 @@ export default function DoctorQuickAuth() {
                     display: 'block',
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: '#8891a4',
+                    color: 'var(--text-secondary)',
                     textTransform: 'uppercase',
                     letterSpacing: '1.2px',
                     marginBottom: '8px',
@@ -455,29 +450,11 @@ export default function DoctorQuickAuth() {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      style={{
-                        width: '100%',
-                        padding: '14px 16px 14px 44px',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        color: '#eef1f6',
-                        fontSize: '15px',
-                        letterSpacing: '2px',
-                        outline: 'none',
-                        transition: 'all 300ms',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={e => {
-                        e.target.style.borderColor = 'rgba(52, 211, 153, 0.4)'
-                        e.target.style.boxShadow = '0 0 0 3px rgba(52, 211, 153, 0.08)'
-                      }}
-                      onBlur={e => {
-                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                        e.target.style.boxShadow = 'none'
-                      }}
+                      style={{ ...inputStyle, letterSpacing: '2px' }}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
                     />
-                    <Lock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#4a5568' }} />
+                    <Lock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
                   </div>
                 </div>
 
@@ -494,11 +471,11 @@ export default function DoctorQuickAuth() {
                         gap: '8px',
                         padding: '10px 14px',
                         borderRadius: '10px',
-                        background: 'rgba(255, 45, 85, 0.08)',
+                        background: 'var(--color-critical-bg)',
                         border: '1px solid rgba(255, 45, 85, 0.2)',
                         marginBottom: '16px',
                         fontSize: '13px',
-                        color: '#ff6b8a',
+                        color: 'var(--color-critical)',
                       }}
                     >
                       <AlertCircle size={16} />
@@ -517,7 +494,7 @@ export default function DoctorQuickAuth() {
                     padding: '15px 24px',
                     borderRadius: '14px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #34d399, #22c55e)',
+                    background: 'linear-gradient(135deg, var(--color-stable), #22c55e)',
                     color: '#022c22',
                     fontSize: '15px',
                     fontWeight: 700,
@@ -549,6 +526,7 @@ export default function DoctorQuickAuth() {
                     fontSize: '13px',
                     cursor: 'pointer',
                     textDecoration: 'none',
+                    fontFamily: 'var(--font-display)',
                   }}
                 >
                   {isLogin ? "Don't have clearance? Click to register" : "Already have clearance? Click to login"}
@@ -560,11 +538,11 @@ export default function DoctorQuickAuth() {
                 textAlign: 'center',
                 marginTop: '28px',
                 paddingTop: '20px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.04)',
+                borderTop: '1px solid var(--glass-border)',
               }}>
                 <p style={{
                   fontSize: '11px',
-                  color: '#4a5568',
+                  color: 'var(--text-dim)',
                   fontFamily: 'var(--font-mono)',
                   letterSpacing: '0.5px',
                   lineHeight: 1.6,
@@ -592,7 +570,7 @@ export default function DoctorQuickAuth() {
                   width: '88px',
                   height: '88px',
                   borderRadius: '50%',
-                  background: 'rgba(52, 211, 153, 0.08)',
+                  background: 'var(--color-stable-bg)',
                   border: '2px solid rgba(52, 211, 153, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
@@ -612,21 +590,21 @@ export default function DoctorQuickAuth() {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                 >
-                  <Stethoscope size={36} color="#34d399" strokeWidth={1.5} />
+                  <Stethoscope size={36} color="var(--color-stable)" strokeWidth={1.5} />
                 </motion.div>
               </motion.div>
 
               <h2 style={{
                 fontSize: '18px',
                 fontWeight: 600,
-                color: '#eef1f6',
+                color: 'var(--text-primary)',
                 marginBottom: '6px',
               }}>
                 {isLogin ? 'Verifying Credentials' : 'Registering Identity'}
               </h2>
               <p style={{
                 fontSize: '12px',
-                color: '#8891a4',
+                color: 'var(--text-secondary)',
                 fontFamily: 'var(--font-mono)',
                 marginBottom: '28px',
               }}>
@@ -638,7 +616,7 @@ export default function DoctorQuickAuth() {
                 width: '100%',
                 height: '3px',
                 borderRadius: '2px',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'var(--risk-bar-bg)',
                 marginBottom: '24px',
                 overflow: 'hidden',
               }}>
@@ -646,7 +624,7 @@ export default function DoctorQuickAuth() {
                   style={{
                     height: '100%',
                     borderRadius: '2px',
-                    background: 'linear-gradient(90deg, #34d399, #64d2ff)',
+                    background: `linear-gradient(90deg, var(--color-stable), var(--accent-cyan))`,
                   }}
                   initial={{ width: '0%' }}
                   animate={{ width: `${scanProgress}%` }}
@@ -675,17 +653,17 @@ export default function DoctorQuickAuth() {
                         padding: '8px 0',
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
-                        color: isDone ? '#34d399' : isActive ? '#eef1f6' : '#4a5568',
+                        color: isDone ? 'var(--color-stable)' : isActive ? 'var(--text-primary)' : 'var(--text-dim)',
                       }}
                     >
                       {isDone ? (
-                        <CheckCircle2 size={14} color="#34d399" />
+                        <CheckCircle2 size={14} color="var(--color-stable)" />
                       ) : isActive ? (
                         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                          <Loader2 size={14} color="#64d2ff" />
+                          <Loader2 size={14} color="var(--accent-cyan)" />
                         </motion.div>
                       ) : (
-                        <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid #4a5568' }} />
+                        <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--text-dim)' }} />
                       )}
                       {step.label}
                     </motion.div>
@@ -712,7 +690,7 @@ export default function DoctorQuickAuth() {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: 'rgba(52, 211, 153, 0.12)',
+                  background: 'var(--color-stable-bg)',
                   border: '2px solid rgba(52, 211, 153, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
@@ -721,20 +699,20 @@ export default function DoctorQuickAuth() {
                   boxShadow: '0 0 40px rgba(52, 211, 153, 0.15)',
                 }}
               >
-                <CheckCircle2 size={36} color="#34d399" strokeWidth={2} />
+                <CheckCircle2 size={36} color="var(--color-stable)" strokeWidth={2} />
               </motion.div>
 
               <h2 style={{
                 fontSize: '20px',
                 fontWeight: 700,
-                color: '#34d399',
+                color: 'var(--color-stable)',
                 marginBottom: '8px',
               }}>
                 Access Granted
               </h2>
               <p style={{
                 fontSize: '13px',
-                color: '#8891a4',
+                color: 'var(--text-secondary)',
                 fontFamily: 'var(--font-mono)',
                 marginBottom: '4px',
               }}>
@@ -742,7 +720,7 @@ export default function DoctorQuickAuth() {
               </p>
               <p style={{
                 fontSize: '11px',
-                color: '#4a5568',
+                color: 'var(--text-dim)',
                 fontFamily: 'var(--font-mono)',
               }}>
                 Redirecting to Command Center...
@@ -771,10 +749,10 @@ export default function DoctorQuickAuth() {
         <span style={{
           fontSize: '12px',
           fontFamily: 'var(--font-mono)',
-          color: '#8891a4',
+          color: 'var(--text-secondary)',
           letterSpacing: '2px',
         }}>
-          SYNAPSE EIT
+          SYNAPSE GTB
         </span>
       </div>
     </div>

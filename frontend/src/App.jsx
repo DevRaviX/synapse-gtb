@@ -1,19 +1,41 @@
 import { useState, useEffect, useCallback } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { BrowserRouter } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import ChronosView from './pages/ChronosView'
 import SentinelView from './pages/SentinelView'
 import CommandPalette from './components/CommandPalette'
 import DoctorQuickAuth from './components/auth/DoctorQuickAuth'
+import Sidebar from './components/shared/Sidebar'
+import StatusBar from './components/shared/StatusBar'
+import ThemeToggle from './components/shared/ThemeToggle'
+import SplashScreen from './components/shared/SplashScreen'
+import AmbientParticles from './components/shared/AmbientParticles'
+import { ToastProvider, useToast } from './components/shared/NotificationToast'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { playNavClick, playPaletteOpen } from './utils/sounds'
-import { LogOut } from 'lucide-react'
+import { LogOut, Bell, Search } from 'lucide-react'
 import './styles/index.css'
+
+// Page transition variants
+const pageVariants = {
+  initial: { opacity: 0, scale: 0.98, y: 12 },
+  enter: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.98, y: -12 },
+}
+
+const pageTransition = {
+  duration: 0.35,
+  ease: [0.4, 0, 0.2, 1],
+}
 
 function AuthenticatedApp() {
   const { isAuthenticated, loading, doctor, logout } = useAuth()
   const [showPalette, setShowPalette] = useState(false)
   const [activeView, setActiveView] = useState('chronos')
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
+  const [currentRisk, setCurrentRisk] = useState(0.5)
 
   // Global Cmd+K handler
   useEffect(() => {
@@ -46,7 +68,7 @@ function AuthenticatedApp() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#040608',
+        background: 'var(--bg-abyss)',
       }}>
         <div style={{
           width: '40px',
@@ -66,43 +88,85 @@ function AuthenticatedApp() {
     return <DoctorQuickAuth />
   }
 
+  // Show splash screen on first load after auth
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />
+  }
+
+  const sidebarWidth = sidebarExpanded ? 220 : 64
+
   // Main authenticated dashboard
   return (
-    <div className="bg-[#06080d] text-gray-100 min-h-screen font-display">
+    <div style={{ 
+      background: 'var(--bg-abyss)', 
+      color: 'var(--text-primary)', 
+      minHeight: '100vh', 
+      fontFamily: 'var(--font-display)',
+    }}>
+      {/* Ambient particles */}
+      <AmbientParticles riskLevel={currentRisk} />
+
       {/* Ambient background */}
       <div className="ambient-bg" />
 
       {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 py-3 bg-glass-texture border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <img src="/images/MasterBrandLogo.png" alt="Synapse Logo" className="h-9 w-auto object-contain drop-shadow-md" />
-          <span className="font-bold text-xl tracking-tight text-white font-display">Synapse EIT</span>
+      <nav className="bg-glass-texture" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 20px',
+        height: '56px',
+        borderBottom: '1px solid var(--nav-border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/images/MasterBrandLogo.png" alt="Synapse Logo" style={{
+            height: '32px',
+            width: 'auto',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 0 8px rgba(52, 211, 153, 0.2))',
+          }} />
+          <span style={{
+            fontWeight: 700,
+            fontSize: '18px',
+            letterSpacing: '-0.3px',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display)',
+          }}>Synapse GTB</span>
+          <span style={{
+            fontSize: '9px',
+            fontFamily: 'var(--font-mono)',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-full)',
+            background: 'var(--badge-bg)',
+            color: 'var(--text-dim)',
+            letterSpacing: '1.5px',
+          }}>BETA</span>
         </div>
 
-        <div className="flex gap-2 p-1 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-inner">
-          <NavTab active={activeView === 'chronos'} onClick={() => navigate('chronos')} icon="/images/ProjectChronos.png" label="Project Chronos" />
-          <NavTab active={activeView === 'sentinel'} onClick={() => navigate('sentinel')} icon="/images/ProjectSentinel.png" label="Project Sentinel" />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Doctor badge */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             padding: '5px 12px',
-            borderRadius: '9999px',
-            background: 'rgba(52, 211, 153, 0.08)',
+            borderRadius: 'var(--radius-full)',
+            background: 'var(--color-stable-bg)',
             border: '1px solid rgba(52, 211, 153, 0.15)',
             fontSize: '12px',
             fontFamily: 'var(--font-mono)',
-            color: '#34d399',
+            color: 'var(--color-stable)',
           }}>
             <div style={{
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              background: '#34d399',
+              background: 'var(--color-stable)',
               boxShadow: '0 0 8px rgba(52, 211, 153, 0.6)',
               animation: 'pulse-dot 2s infinite',
             }} />
@@ -126,18 +190,23 @@ function AuthenticatedApp() {
               fontSize: '11px',
               transition: 'var(--transition-smooth)',
             }}
-            onMouseEnter={e => { e.target.style.borderColor = 'var(--glass-border-hover)'; e.target.style.color = 'var(--text-primary)'; }}
-            onMouseLeave={e => { e.target.style.borderColor = 'var(--glass-border)'; e.target.style.color = 'var(--text-secondary)'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--glass-border-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
+            <Search size={12} />
             <span>Search</span>
             <kbd style={{
-              background: 'rgba(255,255,255,0.06)',
+              background: 'var(--kbd-bg)',
               padding: '2px 6px',
               borderRadius: '4px',
               fontSize: '10px',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid var(--kbd-border)',
+              color: 'var(--text-dim)',
             }}>⌘K</kbd>
           </button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Logout button */}
           <button
@@ -151,7 +220,7 @@ function AuthenticatedApp() {
               width: '34px',
               height: '34px',
               borderRadius: '10px',
-              background: 'rgba(255, 45, 85, 0.06)',
+              background: 'var(--color-critical-bg)',
               border: '1px solid rgba(255, 45, 85, 0.12)',
               color: '#ff6b8a',
               cursor: 'pointer',
@@ -162,7 +231,7 @@ function AuthenticatedApp() {
               e.currentTarget.style.borderColor = 'rgba(255, 45, 85, 0.3)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255, 45, 85, 0.06)'
+              e.currentTarget.style.background = 'var(--color-critical-bg)'
               e.currentTarget.style.borderColor = 'rgba(255, 45, 85, 0.12)'
             }}
           >
@@ -171,11 +240,56 @@ function AuthenticatedApp() {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div style={{ position: 'relative', zIndex: 1, paddingTop: '56px', height: '100vh' }}>
-        {activeView === 'chronos' && <ChronosView />}
-        {activeView === 'sentinel' && <SentinelView />}
+      {/* Sidebar */}
+      <Sidebar
+        activeView={activeView}
+        onNavigate={navigate}
+        expanded={sidebarExpanded}
+        onToggleExpand={() => setSidebarExpanded(e => !e)}
+      />
+
+      {/* Main Content with page transitions */}
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        paddingTop: '56px',
+        paddingLeft: sidebarWidth,
+        paddingBottom: '28px',
+        height: '100vh',
+        transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        <AnimatePresence mode="wait">
+          {activeView === 'chronos' && (
+            <motion.div
+              key="chronos"
+              variants={pageVariants}
+              initial="initial"
+              animate="enter"
+              exit="exit"
+              transition={pageTransition}
+              style={{ height: '100%' }}
+            >
+              <ChronosView onRiskChange={setCurrentRisk} />
+            </motion.div>
+          )}
+          {activeView === 'sentinel' && (
+            <motion.div
+              key="sentinel"
+              variants={pageVariants}
+              initial="initial"
+              animate="enter"
+              exit="exit"
+              transition={pageTransition}
+              style={{ height: '100%' }}
+            >
+              <SentinelView />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Status Bar */}
+      <StatusBar />
 
       {/* Command Palette */}
       <AnimatePresence>
@@ -194,27 +308,13 @@ function AuthenticatedApp() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AuthenticatedApp />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <AuthenticatedApp />
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
-  )
-}
-
-function NavTab({ active, onClick, icon, label }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex items-center gap-2.5 px-5 py-2 rounded-full border-b-2 transition-all duration-300
-        ${active 
-          ? 'bg-[#34d399]/15 text-[#34d399] border-[#34d399] shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
-          : 'border-transparent text-gray-400 hover:text-white hover:brightness-125 hover:bg-white/5'}
-      `}
-      style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '13px', letterSpacing: '0.5px' }}
-    >
-      <img src={icon} alt={label} className={`h-6 w-6 object-contain drop-shadow transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-60'}`} />
-      <span>{label}</span>
-    </button>
   )
 }

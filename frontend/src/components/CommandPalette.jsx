@@ -53,7 +53,7 @@ export default function CommandPalette({ onClose, onNavigate, currentView }) {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0, 0, 0, 0.6)',
+          background: 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(8px)',
           zIndex: 9998,
         }}
@@ -72,13 +72,13 @@ export default function CommandPalette({ onClose, onNavigate, currentView }) {
           transform: 'translateX(-50%)',
           width: '540px',
           maxWidth: '90vw',
-          background: 'rgba(10, 14, 23, 0.95)',
+          background: 'var(--toast-bg)',
           backdropFilter: 'blur(40px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: '1px solid var(--glass-border)',
           borderRadius: 'var(--radius-xl)',
           zIndex: 9999,
           overflow: 'hidden',
-          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255,255,255,0.1)',
+          boxShadow: 'var(--glass-shadow)',
         }}
       >
         {/* Search Input */}
@@ -140,7 +140,7 @@ export default function CommandPalette({ onClose, onNavigate, currentView }) {
                   fontSize: '14px',
                   transition: 'var(--transition-fast)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--sidebar-item-hover)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
                 <Icon size={16} color="var(--text-secondary)" />
