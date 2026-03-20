@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 let supabase = null;
 function getSupabase() {
@@ -11,14 +11,13 @@ function getSupabase() {
   return supabase;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Parse the path after /api/
   const path = req.url.split('?')[0];
 
   try {
@@ -57,7 +56,7 @@ export default async function handler(req, res) {
               batches: (manifest.merkle_batches || []).length,
               genesis_hash: manifest.genesis_hash || '',
             });
-          } catch { continue; }
+          } catch (e2) { continue; }
         }
         return res.json(recordings);
       } catch (e) {
@@ -113,4 +112,4 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ error: err.message, stack: err.stack });
   }
-}
+};
