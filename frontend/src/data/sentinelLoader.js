@@ -6,10 +6,7 @@
  */
 
 import { sha256, ChainState } from '../utils/cryptoEngine.js'
-
-const API_BASE = 'http://localhost:8000'
-
-// ── Sample telemetry (used when backend is not running) ──
+import { API_BASE } from '../utils/config'
 
 const SAMPLE_TELEMETRY = Array.from({ length: 360 }, (_, i) => {
   const t = i * 0.5;

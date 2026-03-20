@@ -14,9 +14,7 @@ import HashMetrics from '../components/sentinel/HashMetrics'
 import { loadTelemetry, loadAuditTrail, SAMPLE_COMMS } from '../data/sentinelLoader'
 import { playBreachAlarm, playAnomalyPing } from '../utils/sounds'
 import { Radio, Square, Activity, X } from 'lucide-react'
-
-const API_BASE = 'http://localhost:8000'
-const WS_URL = 'ws://localhost:8000/ws/live'
+import { API_BASE, WS_URL } from '../utils/config'
 
 export default function SentinelView() {
   const { doctor } = useAuth()

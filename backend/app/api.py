@@ -17,9 +17,11 @@ import os
 import json
 import time
 from enum import Enum
+from typing import cast, Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .config import BASE_DATA_DIR
 from .storage import load_manifest, save_manifest, load_json, save_json
@@ -27,6 +29,10 @@ from .verifier import verify_session
 from .capture import start_pipeline as camera_start, get_jpeg, get_mode, is_running as camera_is_running
 
 app = FastAPI(title="Surgical Black Box API", version="2.0.0")
+
+# ── Deployment: Serve Frontend Static Files ──
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FRONTEND_DIST = os.path.join(ROOT_DIR, "frontend", "dist")
 
 # Allow frontend dev server
 app.add_middleware(
@@ -86,10 +92,10 @@ async def list_recordings():
         return []
 
     recordings = []
-    for sid in sorted(os.listdir(sessions_dir)):
-        manifest_path = os.path.join(sessions_dir, sid, "manifest.json")
+    for sid in sorted(os.listdir(str(sessions_dir))):
+        manifest_path = os.path.join(str(sessions_dir), str(sid), "manifest.json")
         if os.path.exists(manifest_path):
-            manifest = load_manifest(manifest_path)
+            manifest = cast(Dict[str, Any], load_manifest(manifest_path))
             recordings.append({
                 "session_id": sid,
                 "records": len(manifest.get("records", [])),
@@ -254,17 +260,23 @@ async def tamper_record(
             rec_idx = i
             break
 
-    if rec is None:
+    if rec_idx is None:
         raise HTTPException(status_code=404, detail=f"Record seq={seq} not found")
+    
+    # Cast for Pyre linter to ensure it knows rec_idx is int
+    rec_idx = cast(int, rec_idx)
+
+    # Narrow type for Pyre
+    r_ptr = cast(Dict[str, Any], records[rec_idx])
 
     if mode == TamperMode.modify_vitals:
-        vitals_path = os.path.join(session_dir, rec["vitals"])
-        vitals = load_json(vitals_path)
-        vitals["hr"] = vitals.get("hr", 80) + 20
+        vitals_path = os.path.join(session_dir, str(r_ptr["vitals"]))
+        vitals = cast(Dict[str, Any], load_json(vitals_path))
+        vitals["hr"] = int(vitals.get("hr", 80)) + 20
         save_json(vitals, vitals_path)
 
     elif mode == TamperMode.modify_frame:
-        frame_path = os.path.join(session_dir, rec["frame"])
+        frame_path = os.path.join(session_dir, str(r_ptr["frame"]))
         with open(frame_path, "r+b") as f:
             data = bytearray(f.read())
             end = min(len(data), 200)
@@ -276,15 +288,15 @@ async def tamper_record(
             f.truncate()
 
     elif mode == TamperMode.delete_frame:
-        frame_path = os.path.join(session_dir, rec["frame"])
+        frame_path = os.path.join(session_dir, str(r_ptr["frame"]))
         if os.path.exists(frame_path):
             os.remove(frame_path)
 
     elif mode == TamperMode.reorder:
         if rec_idx + 1 < len(records):
-            next_rec = records[rec_idx + 1]
-            v_path_a = os.path.join(session_dir, rec["vitals"])
-            v_path_b = os.path.join(session_dir, next_rec["vitals"])
+            next_rec = cast(Dict[str, Any], records[rec_idx + 1])
+            v_path_a = os.path.join(session_dir, str(r_ptr["vitals"]))
+            v_path_b = os.path.join(session_dir, str(next_rec["vitals"]))
             v_a = load_json(v_path_a)
             v_b = load_json(v_path_b)
             save_json(v_b, v_path_a)
@@ -293,3 +305,7 @@ async def tamper_record(
             raise HTTPException(status_code=400, detail="Cannot reorder last record")
 
     return {"status": "tampered", "mode": mode.value, "seq": seq}
+
+# ── Static File Overlay (Deployment) ──
+if os.path.exists(FRONTEND_DIST):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="static")

@@ -11,8 +11,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Trash2, Edit3, Zap, AlertTriangle } from 'lucide-react';
 import { playBreachAlarm, playHashSealed, playCriticalBeep } from '../../utils/sounds';
-
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../../utils/config';
 
 export default function VerificationPanel({ activeSessionId = null }) {
   const [recordings, setRecordings] = useState([]);

@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Clock, Link2, Layers, HardDrive } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../../utils/config';
 
 export default function HashMetrics({
   liveMode = false,

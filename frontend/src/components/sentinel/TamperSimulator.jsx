@@ -7,8 +7,7 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-
-const API_BASE = 'http://localhost:8000'
+import { API_BASE } from '../../utils/config'
 
 const TAMPER_MODES = [
   { id: 'modify_vitals', label: '💉 Modify Vitals', desc: 'Increase HR by +20 BPM' },

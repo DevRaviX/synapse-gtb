@@ -8,7 +8,7 @@ function formatTime(seconds) {
 }
 
 const SPEEDS = [0.5, 1, 1.5, 2]
-const API_BASE = 'http://localhost:8000'
+import { API_BASE } from '../../utils/config'
 
 const btnBase = {
   background: 'transparent',
