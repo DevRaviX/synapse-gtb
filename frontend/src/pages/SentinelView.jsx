@@ -385,7 +385,7 @@ export default function SentinelView() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
           <div>
-            <h2 style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Project Sentinel</h2>
+            <h2 style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '2px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Synapse GTB // Sentinel</h2>
             <h1 style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.5px', marginTop: '2px' }}>Surgical Flight Recorder</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
