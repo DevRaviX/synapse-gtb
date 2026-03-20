@@ -96,8 +96,11 @@ export default function SentinelView() {
           if (data.running) {
             setMode('live')
             setLiveSessionId(data.session_id)
+            setActivePatientId(data.patient_id || null)
             setCameraMode(data.camera_mode || 'webcam')
-            connectWebSocket()
+            if ((data.camera_mode || 'webcam') !== 'cloud-demo') {
+              connectWebSocket()
+            }
           }
         }
       } catch (_) {}
@@ -209,14 +212,19 @@ export default function SentinelView() {
         setLiveSeq(data.seq)
         setLiveVitals(data.vitals)
         setLiveLatestHash(data.chain_hash)
-        setLiveElapsed(prev => prev + 1)
+        setLiveElapsed(data.elapsed ?? (data.seq + 1))
+        setCameraMode(data.camera_mode || 'webcam')
         setLiveChain(prev => {
            const entry = {
              seq: data.seq,
              chain_hash: data.chain_hash,
+             data_hash: data.chain_hash,
+             prev_hash: data.prev_hash,
+             frame_sha256: data.frame_sha256,
              vitals: data.vitals,
-             timestamp: data.seq, // assume 1s per seq for simplicity
+             timestamp: data.elapsed ?? (data.seq + 1),
              session_id: data.session_id,
+             camera_mode: data.camera_mode || 'webcam',
            }
            const next = [...prev, entry]
            return next.length > 200 ? next.slice(-200) : next
@@ -246,7 +254,11 @@ export default function SentinelView() {
     await new Promise(r => setTimeout(r, 2000)) 
     
     try {
-      const res = await fetch(`${API_BASE}/api/start`, { method: 'POST' })
+      const res = await fetch(`${API_BASE}/api/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patient_id: selectedPatientId }),
+      })
       if (res.ok) {
         const data = await res.json()
         setLiveSessionId(data.session_id)
@@ -257,7 +269,9 @@ export default function SentinelView() {
         setLiveBatchCount(0)
         setLiveLatestHash('')
         setMode('live')
-        connectWebSocket()
+        if ((data.camera_mode || 'webcam') !== 'cloud-demo') {
+          connectWebSocket()
+        }
       }
     } catch (e) {
       console.error('[START] Failed:', e)
@@ -271,11 +285,27 @@ export default function SentinelView() {
   const handleStop = async () => {
     setStopping(true)
     try {
-      await fetch(`${API_BASE}/api/stop`, { method: 'POST' })
-      // The session_complete WS message will handle the mode switch
-      // We don't clear the liveChain or liveElapsed here so the summary stays visible
+      const res = await fetch(`${API_BASE}/api/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: liveSessionId }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+      const data = await res.json()
+      if (Array.isArray(data.records) && data.records.length > 0) {
+        setLiveChain(data.records)
+        setLiveElapsed(data.total_elapsed || data.records[data.records.length - 1]?.timestamp || 0)
+      }
+      setLiveLatestHash(data.final_hash || '')
+      setLiveSessionId(data.session_id || liveSessionId)
+      setCameraMode(data.camera_mode || cameraMode)
+      setReviewFrameIdx(0)
+      setIsPlaying(false)
+      setMode('review')
     } catch (e) {
       console.error('[STOP] Failed:', e)
+    } finally {
       setStopping(false)
     }
   }
@@ -328,6 +358,7 @@ export default function SentinelView() {
 
   // ── Review frame from recorded session ──
   const hasRecordedSession = mode === 'review' && liveChain.length > 0 && liveSessionId
+  const hasRecordedVideoSession = hasRecordedSession && cameraMode === 'cloud-demo'
   const reviewChainEntry = hasRecordedSession ? liveChain[Math.min(reviewFrameIdx, liveChain.length - 1)] : null
   const reviewFrame = reviewChainEntry ? {
     heart_rate: reviewChainEntry.vitals?.hr,
@@ -362,6 +393,17 @@ export default function SentinelView() {
     if (hasRecordedSession) {
       if (reviewFrameIdx >= liveChain.length - 1) {
         setReviewFrameIdx(0)
+        if (hasRecordedVideoSession && videoRef.current) {
+          videoRef.current.currentTime = 0
+        }
+      }
+
+      if (hasRecordedVideoSession && videoRef.current) {
+        if (isPlaying) {
+          videoRef.current.pause()
+        } else {
+          videoRef.current.play()
+        }
       }
       setIsPlaying(prev => !prev)
     } else {
@@ -372,8 +414,12 @@ export default function SentinelView() {
   const handleReviewSeek = (time) => {
     if (hasRecordedSession) {
       // Map time (0..liveElapsed) to frame index
-      const idx = Math.round((time / liveElapsed) * (liveChain.length - 1))
+      const totalElapsed = liveElapsed || liveChain.length || 1
+      const idx = Math.round((time / totalElapsed) * (liveChain.length - 1))
       setReviewFrameIdx(Math.max(0, Math.min(idx, liveChain.length - 1)))
+      if (hasRecordedVideoSession && videoRef.current) {
+        videoRef.current.currentTime = time
+      }
     } else {
       handleSeek(time)
     }

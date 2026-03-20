@@ -1,14 +1,34 @@
 const { getSupabase } = require('./_supabase');
+const {
+  fetchAllSentinelRows,
+  groupRowsBySession,
+  summarizeSession,
+} = require('./_sentinel');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
+
   const sb = getSupabase();
   if (!sb) return res.json([]);
-  
+
+  const sentinelRows = await fetchAllSentinelRows(sb);
+  if (sentinelRows.length) {
+    const grouped = groupRowsBySession(sentinelRows);
+    const recordings = [];
+
+    for (const sessionRows of grouped.values()) {
+      const summary = summarizeSession(sessionRows);
+      if (summary) recordings.push(summary);
+    }
+
+    recordings.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    return res.json(recordings);
+  }
+
   try {
     const { data: items, error } = await sb.storage.from('sessions').list('');
     if (error || !items) return res.json([]);
-    
+
     const recordings = [];
     for (const item of items) {
       if (!item.name || item.name.startsWith('.')) continue;
@@ -23,10 +43,12 @@ module.exports = async (req, res) => {
           batches: (manifest.merkle_batches || []).length,
           genesis_hash: manifest.genesis_hash || '',
         });
-      } catch (e2) { continue; }
+      } catch (_) {
+        continue;
+      }
     }
     return res.json(recordings);
-  } catch (e) {
+  } catch (_) {
     return res.json([]);
   }
 };

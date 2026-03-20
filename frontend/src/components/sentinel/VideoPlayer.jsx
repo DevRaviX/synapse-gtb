@@ -40,16 +40,19 @@ const VideoPlayer = forwardRef(function VideoPlayer({
   const [streamError, setStreamError] = useState(false)
   const [useFramePlayback, setUseFramePlayback] = useState(false)
   const [lastSessionId, setLastSessionId] = useState(null)
+  const useCloudDemoVideo = cameraMode === 'cloud-demo'
 
   // Determine if we should use frame-by-frame playback
   useEffect(() => {
-    if (!liveMode && !demoMode && currentFrame?.session_id) {
+    if (!liveMode && !demoMode && currentFrame?.session_id && !useCloudDemoVideo) {
        setUseFramePlayback(true)
        setLastSessionId(currentFrame.session_id)
     } else if (liveMode || demoMode) {
        setUseFramePlayback(false)
+    } else {
+       setUseFramePlayback(false)
     }
-  }, [liveMode, demoMode, currentFrame])
+  }, [liveMode, demoMode, currentFrame, useCloudDemoVideo])
 
   // --- MASTER CLOCK SYNC (demo mode only) ---
   useEffect(() => {
@@ -348,21 +351,38 @@ const VideoPlayer = forwardRef(function VideoPlayer({
         {/* ════════════  LIVE MODE: Single OAK-D Feed  ════════════ */}
         {liveMode && (
           <div style={{ flex: 1, position: 'relative', background: 'var(--bg-abyss)' }}>
-            <img
-              src={streamError ? `${API_BASE}/api/snapshot?t=${currentTime}` : `${API_BASE}/api/stream?t=${Date.now()}`}
-              alt="Live Camera Feed"
-              onError={() => setStreamError(true)}
-              onLoad={() => {
-                // If we were in error/polling mode, keep refreshing snapshots
-              }}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                background: '#000',
-              }}
-            />
-            {streamError && (
+            {useCloudDemoVideo ? (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  background: '#000',
+                }}
+              >
+                <source src="/video/videoplayback - Trim.mp4" type="video/mp4" />
+              </video>
+            ) : (
+              <img
+                src={streamError ? `${API_BASE}/api/snapshot?t=${currentTime}` : `${API_BASE}/api/stream?t=${Date.now()}`}
+                alt="Live Camera Feed"
+                onError={() => setStreamError(true)}
+                onLoad={() => {
+                  // If we were in error/polling mode, keep refreshing snapshots
+                }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  background: '#000',
+                }}
+              />
+            )}
+            {streamError && !useCloudDemoVideo && (
               <div style={{
                 position: 'absolute', top: 40, left: 16, zIndex: 12,
                 background: 'rgba(255,165,0,0.2)', color: 'orange', padding: '2px 8px', borderRadius: 4,
@@ -403,7 +423,7 @@ const VideoPlayer = forwardRef(function VideoPlayer({
           <>
             {/* Frame display */}
             <div style={{ flex: useFramePlayback ? 2 : 1, position: 'relative', background: 'var(--bg-abyss)', borderRight: useFramePlayback ? '1px solid var(--glass-border)' : 'none' }}>
-              {useFramePlayback ? (
+            {useFramePlayback ? (
                 <img
                   key={`frame-${currentFrame?.frame_idx}`}
                   src={currentFrame ? `${API_BASE}/api/frame/${lastSessionId}/${currentFrame.frame_idx}?t=${currentFrame.frame_idx}` : ''}
