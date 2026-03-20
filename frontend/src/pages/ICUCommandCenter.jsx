@@ -9,7 +9,7 @@ import {
   Plus, Send, X, Upload, ShieldCheck
 } from 'lucide-react'
 
-export default function ICUCommandCenter() {
+export default function ICUCommandCenter({ onNavigate }) {
   const { user: doctor } = useAuth()
   const [activeTab, setActiveTab] = useState('instructions')
   const [instructions, setInstructions] = useState([])
@@ -166,6 +166,7 @@ export default function ICUCommandCenter() {
             onSelect={(patientId) => {
               loadAll()
               setShowScanner(false)
+              if (onNavigate) onNavigate('chronos')
             }}
             doctorId={doctor?.id}
             allPatients={patients}
@@ -418,12 +419,12 @@ function PatientScannerModal({ onClose, onSelect, doctorId, allPatients }) {
               }}>
                 <CheckCircle2 size={48} color="var(--color-stable)" />
               </div>
-              <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-stable)' }}>Patient Connected</h2>
+              <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-stable)' }}>Patient Scanned</h2>
               <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px', fontFamily: 'var(--font-mono)', letterSpacing: '1px' }}>
                 HANDSHAKE SUCCESSFUL // {selectedPatient.id}
               </p>
-              <div style={{ marginTop: '24px', fontSize: '11px', color: 'var(--text-accent)', animate: 'pulse' }}>
-                Redirecting to Command Dashboard...
+              <div style={{ marginTop: '24px', fontSize: '11px', color: 'var(--text-accent)', fontWeight: 600 }}>
+                PREPARING OPERATING THEATER...
               </div>
             </motion.div>
           )}

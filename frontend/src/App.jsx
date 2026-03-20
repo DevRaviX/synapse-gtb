@@ -407,7 +407,7 @@ function AuthenticatedApp() {
               transition={pageTransition}
               style={{ height: '100%' }}
             >
-              <ICUCommandCenter />
+              <ICUCommandCenter onNavigate={navigate} />
             </motion.div>
           )}
         </AnimatePresence>
