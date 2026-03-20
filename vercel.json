@@ -1,17 +1,8 @@
 {
   "version": 2,
+  "outputDirectory": "frontend/dist",
   "rewrites": [
-    {
-      "source": "/telemetry.json",
-      "destination": "/api/telemetry"
-    },
-    {
-      "source": "/audit_trail.json",
-      "destination": "/api/audit_trail"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
+    { "source": "/telemetry.json", "destination": "/api/telemetry" },
+    { "source": "/audit_trail.json", "destination": "/api/audit_trail" }
   ]
 }
