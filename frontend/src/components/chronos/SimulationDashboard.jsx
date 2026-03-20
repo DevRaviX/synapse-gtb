@@ -345,8 +345,8 @@ export default function SimulationDashboard({ patient, onBack }) {
               </div>
             </div>
             
-            <div style={{ height: '140px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div style={{ height: '140px', minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={140}>
                 <AreaChart data={history.map((h, i) => ({ hour: h._hour || i, value: h[selectedFeature] }))}>
                   <defs>
                     <linearGradient id="featureGrad" x1="0" y1="0" x2="0" y2="1">
@@ -538,8 +538,8 @@ export default function SimulationDashboard({ patient, onBack }) {
                                   </span>
                                 </div>
                                 {/* Mini sparkline */}
-                                <div style={{ height: '18px', marginTop: '4px' }}>
-                                  <ResponsiveContainer width="100%" height="100%">
+                                <div style={{ height: '18px', marginTop: '4px', minWidth: 0 }}>
+                                  <ResponsiveContainer width="100%" height="100%" minHeight={18}>
                                     <LineChart data={history.slice(-12).map((h, i) => ({ v: h[feat] }))}>
                                       <Line 
                                         type="monotone" 

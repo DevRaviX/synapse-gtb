@@ -34,7 +34,8 @@ export default function ShapExplainer({ features, patientId }) {
         }}>{patientId}</div>
       </div>
 
-      <ResponsiveContainer width="100%" height={100}>
+      <div style={{ minWidth: 0, minHeight: 100 }}>
+        <ResponsiveContainer width="100%" height={100} minHeight={100}>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 0 }}>
           <XAxis type="number" hide domain={[-0.4, 0.4]} />
           <YAxis
@@ -56,8 +57,9 @@ export default function ShapExplainer({ features, patientId }) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+    </div>
 
-      <div style={{
+    <div style={{
         display: 'flex',
         gap: '16px',
         marginTop: '6px',
