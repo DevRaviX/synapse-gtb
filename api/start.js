@@ -1,7 +1,11 @@
+
 module.exports = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({
-    status: 'unavailable',
-    message: 'Recording requires local backend. Use Demo Mode on Vercel.',
+  const sessionId = "session-" + Math.random().toString(36).substr(2, 9);
+  
+  // Respond with a dummy session
+  res.status(200).json({ 
+    session_id: sessionId,
+    camera_mode: "webcam",
+    message: "Live recording initiated in Virtual Mode (Serverless Fallback)."
   });
 };

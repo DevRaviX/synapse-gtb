@@ -73,6 +73,23 @@ export default function ICUCommandCenter({ onNavigate }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => onNavigate('sentinel')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: 'var(--radius-full)',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)', 
+              color: '#ef4444', fontSize: '11px', fontWeight: 700,
+              fontFamily: 'var(--font-mono)', cursor: 'pointer', letterSpacing: '1px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          >
+            <ShieldCheck size={14} /> SENTINEL
+          </button>
+
            <button
             onClick={() => setShowScanner(true)}
             style={{
@@ -87,7 +104,7 @@ export default function ICUCommandCenter({ onNavigate }) {
             onMouseEnter={e => e.currentTarget.style.background = 'color-mix(in srgb, var(--color-brand-accent) 15%, transparent)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--glass-bg)'}
           >
-            <ShieldCheck size={14} /> SCAN PATIENT
+            <Upload size={14} /> SCAN PATIENT
           </button>
           
           <button
@@ -650,6 +667,31 @@ function ReportsTab({ items, onSelect }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '12px', fontWeight: 600 }}>{r.report_type}</div>
               <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{r.patients?.name || r.patient_id}</div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onSelect({ ...r, type: 'report' }); }} 
+                  style={{
+                    padding: '4px 10px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.1)',
+                    border: '1px solid rgba(56, 189, 248, 0.2)', color: 'var(--accent-blue)',
+                    fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-mono)'
+                  }}
+                >
+                  VIEW
+                </button>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (window.onNavigateToSentinel) window.onNavigateToSentinel();
+                  }} 
+                  style={{
+                    padding: '4px 10px', borderRadius: '4px', background: 'rgba(52, 211, 153, 0.1)',
+                    border: '1px solid rgba(52, 211, 153, 0.2)', color: 'var(--color-stable)',
+                    fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-mono)'
+                  }}
+                >
+                  VERIFY
+                </button>
+              </div>
             </div>
             <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
               {new Date(r.created_at).toLocaleDateString()}
@@ -1058,16 +1100,22 @@ function ItemDetailModal({ item, onClose }) {
                   <DetailSection label="Patient" value={item.patients?.name || item.patient_id} fallback="P-1042" />
                   <DetailSection label="Verified On" value={item.created_at ? new Date(item.created_at).toLocaleString() : 'Today'} />
                </div>
-               <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
+                <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.2)' }}>
                   <FileText size={40} color="var(--text-dim)" style={{ marginBottom: '16px', opacity: 0.6 }} />
                   <div style={{ fontSize: '15px', fontWeight: 600 }}>Encrypted DICOM / PDF Stream</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', marginTop: '8px', wordBreak: 'break-all' }}>
                     {item.file_path || 'vault://eb82..091a/secure_payload.axr'}
                   </div>
-                  <button style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--color-brand-accent)', color: '#fff', border: 'none', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>
+                  <button 
+                    onClick={() => {
+                       onClose();
+                       window.onNavigateToSentinel && window.onNavigateToSentinel();
+                    }}
+                    style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--color-brand-accent)', color: '#fff', border: 'none', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                  >
                     OPEN SECURE VIEWER
                   </button>
-               </div>
+                </div>
             </>
           )}
 

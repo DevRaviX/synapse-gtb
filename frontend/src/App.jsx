@@ -62,6 +62,11 @@ function AuthenticatedApp() {
     setShowPalette(false)
   }, [])
 
+  useEffect(() => {
+    window.onNavigateToSentinel = () => navigate('sentinel')
+    return () => { delete window.onNavigateToSentinel }
+  }, [navigate])
+
   // Loading state
   if (loading) {
     return (

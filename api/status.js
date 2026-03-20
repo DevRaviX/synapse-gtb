@@ -1,8 +1,13 @@
+
 module.exports = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({
-    session_id: null, seq: 0, latest_hash: '', prev_hash: '',
-    batches: 0, running: false, camera_mode: 'serverless',
-    message: 'Live pipeline unavailable on serverless. Use Demo Mode.',
+  // Always say a session is ready for virtual interaction
+  // Or say running: false, which is default.
+  // We'll return running: true for a brief period if needed, 
+  // but for serverless we can't maintain state across requests without a DB.
+  
+  res.status(200).json({ 
+    running: false, 
+    session_id: null,
+    message: "Sentinel is on standby."
   });
 };
