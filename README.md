@@ -89,5 +89,13 @@ Developed for the **GTBIT Hackathon**, **Synapse_GTB** represents the future of 
 
 ---
 
+## 👥 The Team
+This project was designed and developed with ❤️ for the **GTBIT Hackathon** by:
+- **Ravi Gupta** — Full Stack & Cloud Infrastructure
+- **Anjeet Kesari** — Backend Architecture & Security
+- **Vidhyadhar Adasul** — Frontend UX & Sentinel Interface
+
+---
+
 ## ⚖️ License
 © 2026 Synapse GTB Team. All rights reserved.
