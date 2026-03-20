@@ -43,9 +43,16 @@ export default function VerificationPanel({ activeSessionId = null }) {
       const data = await res.json();
       setRecordings(data);
       if (!selectedSession && data.length > 0) setSelectedSession(data[0].session_id);
+      setError(null);
       setState('idle');
     } catch (e) {
-      setError('Backend not running — start with: python -m app.main --with-api');
+      // Check if we're on Vercel (serverless) vs local
+      const isServerless = window.location.hostname.includes('vercel.app');
+      if (isServerless) {
+        setError('Cloud mode — no local recordings. Use Demo Mode or record locally first.');
+      } else {
+        setError('Backend not running — start with: python -m app.main --with-api');
+      }
       setState('idle');
     }
   }
